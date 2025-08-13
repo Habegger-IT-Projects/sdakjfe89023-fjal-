@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Health Monitor Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+            margin: 0;
+            padding: 0;
+        }
+        h1 {
+            text-align: center;
+            padding: 20px;
+            margin: 0;
+            color: #333;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+            padding: 20px;
+            max-width: 1200px;
+            margin: auto;
+        }
+        .tile {
+            background: white;
+            border-radius: 8px;
+            padding: 16px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .tile-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+        .tile-title {
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #333;
+        }
+        .status-dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+        }
+        .status-ok { background: #4caf50; }
+        .status-warning { background: #ffc107; }
+        .status-error { background: #f44336; }
+        .tile-body p {
+            margin: 4px 0;
+            font-size: 0.9em;
+            color: #555;
+        }
+        .notes {
+            margin-top: 8px;
+            padding: 8px;
+            background: #f9f9f9;
+            border-left: 3px solid #ccc;
+            font-style: italic;
+            font-size: 0.85em;
+        }
+    </style>
+</head>
+<body>
+    <h1>Health Monitor</h1>
+    <div id="grid" class="grid"></div>
+
+    <script>
+        const STATUS_JSON_URL = "PASTE-YOUR-NETSUITE-JSON-URL-HERE";
+
+        fetch(STATUS_JSON_URL)
+            .then(response => response.json())
+            .then(data => {
+                const grid = document.getElementById('grid');
+                data.tiles.forEach(tile => {
+                    const div = document.createElement('div');
+                    div.className = "tile";
+
+                    let statusClass;
+                    switch (tile.status.toLowerCase()) {
+                        case 'ok': statusClass = 'status-ok'; break;
+                        case 'warning': statusClass = 'status-warning'; break;
+                        default: statusClass = 'status-error';
+                    }
+
+                    div.innerHTML = `
+                        <div class="tile-header">
+                            <div class="tile-title">${tile.category}</div>
+                            <div class="status-dot ${statusClass}"></div>
+                        </div>
+                        <div class="tile-body">
+                            <p><strong>Status:</strong> ${tile.status}</p>
+                            <p><strong>Last Sync:</strong> ${tile.lastSync || '—'}</p>
+                            <p><strong>Admin:</strong> ${tile.adminAcct || '—'}</p>
+                            <p><strong>Integration:</strong> ${tile.integAcct || '—'}</p>
+                        </div>
+                        ${tile.notes ? `<div class="notes">${tile.notes}</div>` : ''}
+                    `;
+                    grid.appendChild(div);
+                });
+            })
+            .catch(err => {
+                document.getElementById('grid').innerHTML = "<p style='text-align:center;'>Error loading data.</p>";
+                console.error(err);
+            });
+    </script>
+</body>
+</html>
